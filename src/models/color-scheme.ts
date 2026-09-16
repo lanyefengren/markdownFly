@@ -19,7 +19,7 @@ import { isDarkColor } from '../utils/color-mix.js';
 export type ColorSchemeMode = 'light' | 'dark';
 
 export interface ColorScheme {
-  /** Stable id, e.g. 'ocean-blue' */
+  /** Stable id, e.g. 'ocean' */
   name: string;
   /**
    * Surface polarity hint (drives shiki default). Optional — inferred from

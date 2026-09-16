@@ -57,7 +57,7 @@ export {
   getColorScheme,
   listColorSchemes,
   registerColorScheme,
-  oceanBlueScheme,
+  oceanScheme,
 } from './themes/index.js';
 export { renderDiagram, isDiagramLanguage } from './diagrams/index.js';
 export type { Presentation, SlideNode, SlideElement } from './models/slide.js';

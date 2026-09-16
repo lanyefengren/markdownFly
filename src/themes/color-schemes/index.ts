@@ -6,10 +6,10 @@
  */
 
 import type { ColorScheme } from '../../models/color-scheme.js';
-import { oceanBlueScheme } from './ocean-blue.js';
+import { oceanScheme } from './ocean.js';
 
 export const colorSchemes: Record<string, ColorScheme> = {
-  [oceanBlueScheme.name]: oceanBlueScheme,
+  [oceanScheme.name]: oceanScheme,
 };
 
 export function getColorScheme(name?: string): ColorScheme | undefined {
@@ -25,4 +25,4 @@ export function registerColorScheme(scheme: ColorScheme): void {
   colorSchemes[scheme.name.toLowerCase()] = scheme;
 }
 
-export { oceanBlueScheme };
+export { oceanScheme };

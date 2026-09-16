@@ -11,7 +11,7 @@ import {
   getColorScheme,
   listColorSchemes,
   registerColorScheme,
-  oceanBlueScheme,
+  oceanScheme,
 } from '../src/themes/color-schemes/index.js';
 import {
   mixHex,
@@ -144,9 +144,9 @@ describe('createThemeFromScheme', () => {
   });
 });
 
-describe('built-in ocean-blue scheme', () => {
+describe('built-in ocean scheme', () => {
   it('is registered and resolves to the author slots', () => {
-    const s = getColorScheme('ocean-blue');
+    const s = getColorScheme('ocean');
     expect(s).toBeDefined();
     expect(s!.ink).toBe('1E4A6F');
     expect(s!.paper).toBe('F0F8FF');
@@ -159,7 +159,7 @@ describe('built-in ocean-blue scheme', () => {
   });
 
   it('appears in listColorSchemes', () => {
-    expect(listColorSchemes().some((x) => x.name === 'ocean-blue')).toBe(true);
+    expect(listColorSchemes().some((x) => x.name === 'ocean')).toBe(true);
   });
 });
 
@@ -171,6 +171,6 @@ describe('color-schemes registry', () => {
     delete colorSchemes['test-light'];
     expect(getColorScheme('test-light')).toBeUndefined();
     // preset still there
-    expect(oceanBlueScheme.name).toBe('ocean-blue');
+    expect(oceanScheme.name).toBe('ocean');
   });
 });
