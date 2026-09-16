@@ -52,8 +52,14 @@ export {
   businessTheme,
   warmTheme,
   defaultTheme,
+  resolveColorScheme,
+  createThemeFromScheme,
+  getColorScheme,
+  listColorSchemes,
+  registerColorScheme,
 } from './themes/index.js';
 export { renderDiagram, isDiagramLanguage } from './diagrams/index.js';
 export type { Presentation, SlideNode, SlideElement } from './models/slide.js';
 export type { Theme } from './models/theme.js';
 export type { MarkdownFlyConfig } from './config/types.js';
+export type { ColorScheme, ColorSchemeMode } from './models/color-scheme.js';

@@ -56,3 +56,14 @@ export {
   inkTheme,
   defaultTheme,
 };
+
+// ColorScheme pipeline (new path; legacy themes above stay untouched)
+export { resolveColorScheme } from './resolve-scheme.js';
+export { createThemeFromScheme } from './from-scheme.js';
+export type { ThemeFromSchemeOptions } from './from-scheme.js';
+export {
+  colorSchemes,
+  getColorScheme,
+  listColorSchemes,
+  registerColorScheme,
+} from './color-schemes/index.js';
