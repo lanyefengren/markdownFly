@@ -1,36 +1,48 @@
 /**
- * Resolve a compact ColorScheme into the existing ThemeColors shape.
+ * Resolve a compact ColorScheme (ink/paper/primary/secondary) into ThemeColors.
  *
  * Compatibility: output uses only current ThemeColors fields. Renderer and
  * diagrams/theme.ts (isDarkTheme → colors.background) keep working unchanged.
  * background is always a bare hex without '#'.
+ *
+ * Role contract (author-facing, never swapped):
+ *   paper → colors.background
+ *   ink   → colors.text
+ *
+ * `accent` is required on ThemeColors but is NOT a ColorScheme slot — it is
+ * derived (primary mixed toward ink) so existing accent consumers keep working
+ * while the authored palette stays at four colors.
  */
 
 import type { ColorScheme } from '../models/color-scheme.js';
+import { resolveSchemeMode } from '../models/color-scheme.js';
 import type { ThemeColors } from '../models/theme.js';
-import { mixHex } from '../utils/color-mix.js';
+import { isDarkColor, mixHex } from '../utils/color-mix.js';
 
 export function resolveColorScheme(scheme: ColorScheme): ThemeColors {
-  const { mode, primary, secondary, accent, tertiary, ink, paper } = scheme;
-  const dark = mode === 'dark';
+  const { primary, secondary, ink, paper } = scheme;
+  // paper is always the page surface; dark only tunes derived surfaces
+  const dark = resolveSchemeMode(scheme) === 'dark';
 
-  const background = dark ? ink : paper;
-  const text = dark ? paper : ink;
+  const background = paper;
+  const text = ink;
 
-  // Code block sits on the opposite surface, lightly mixed toward the text color.
-  // Light decks: near-ink panel; dark decks: near-ink lifted slightly toward paper.
-  const codeBackground = dark ? mixHex(ink, paper, 0.08) : mixHex(ink, paper, 0.12);
-  const codeText = dark ? mixHex(paper, ink, 0.15) : mixHex(paper, ink, 0.05);
+  // Emphasis stand-in for legacy accent consumers: deeper primary
+  const accent = mixHex(primary, ink, 0.45);
 
-  // Cover: brand-tinted surface + readable text
-  const titleBackground = dark ? mixHex(ink, primary, 0.18) : mixHex(paper, primary, 0.12);
-  const titleText = dark ? paper : ink;
+  // Code block: panel distinct from page, readable text
+  const codeBackground = dark ? mixHex(paper, ink, 0.35) : mixHex(paper, ink, 0.85);
+  const codeText = dark ? mixHex(ink, paper, 0.15) : mixHex(ink, paper, 0.05);
 
-  // Marked lines in code: subtle lift from codeBackground toward accent
-  const highlightBackground = mixHex(codeBackground, accent, 0.28);
+  // Cover: primary-tinted surface + ink text
+  const titleBackground = mixHex(paper, primary, 0.12);
+  const titleText = ink;
 
-  // Secondary body text: chromatic secondary mixed with the reading ink
-  const secondaryText = dark ? mixHex(secondary, paper, 0.35) : mixHex(secondary, ink, 0.25);
+  // Marked lines in code: lift from codeBackground toward primary
+  const highlightBackground = mixHex(codeBackground, primary, 0.28);
+
+  // Secondary body text: secondary mixed with reading ink
+  const secondaryText = mixHex(secondary, ink, 0.25);
 
   return {
     primary,
@@ -43,12 +55,16 @@ export function resolveColorScheme(scheme: ColorScheme): ThemeColors {
     titleBackground,
     titleText,
     highlightBackground,
-    // Extension slots (optional in ThemeColors) — filled so new consumers can use them
-    accents: [primary, secondary, accent, tertiary],
+    accents: [primary, secondary],
     subtitle: secondaryText,
-    divider: dark ? mixHex(paper, ink, 0.55) : mixHex(ink, paper, 0.55),
-    muted: dark ? mixHex(paper, ink, 0.4) : mixHex(ink, paper, 0.4),
-    tableHeader: dark ? mixHex(ink, primary, 0.22) : mixHex(paper, primary, 0.1),
-    tableZebra: dark ? mixHex(ink, paper, 0.06) : mixHex(paper, ink, 0.04),
+    divider: mixHex(ink, paper, 0.45),
+    muted: mixHex(ink, paper, 0.35),
+    tableHeader: mixHex(paper, primary, 0.12),
+    tableZebra: mixHex(paper, ink, 0.04),
   };
+}
+
+/** Re-export helper so callers can check surface polarity of a scheme's paper */
+export function isDarkScheme(scheme: ColorScheme): boolean {
+  return isDarkColor(scheme.paper);
 }

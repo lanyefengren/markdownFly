@@ -5,6 +5,7 @@
  */
 
 import type { ColorScheme } from '../models/color-scheme.js';
+import { resolveSchemeMode } from '../models/color-scheme.js';
 import type { Theme, ThemeFonts, ThemeFontSizes } from '../models/theme.js';
 import { resolveColorScheme } from './resolve-scheme.js';
 import { systemFonts } from './font-sets/system.js';
@@ -33,7 +34,9 @@ export function createThemeFromScheme(
     colors: resolveColorScheme(scheme),
     fonts: options.fonts ?? systemFonts,
     fontSize: options.fontSize ?? standardFontSizes,
-    shikiTheme: options.shikiTheme ?? (scheme.mode === 'dark' ? 'github-dark' : 'github-light'),
+    shikiTheme:
+      options.shikiTheme ??
+      (resolveSchemeMode(scheme) === 'dark' ? 'github-dark' : 'github-light'),
     layouts: options.layouts,
     styles: options.styles,
     typography: options.typography,

@@ -66,4 +66,5 @@ export {
   getColorScheme,
   listColorSchemes,
   registerColorScheme,
+  oceanBlueScheme,
 } from './color-schemes/index.js';

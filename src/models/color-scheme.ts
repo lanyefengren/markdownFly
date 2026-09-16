@@ -1,34 +1,49 @@
 /**
  * ColorScheme — minimal user-facing palette for the PPT design system.
  *
- * A scheme is 4 chromatic slots + two neutrals (ink/paper). All other
- * ThemeColors roles are derived by `resolveColorScheme()`, following the
- * Marp Gaia/Uncover and Material Design 3 pattern (small source of truth,
- * roles generated). Built-in presets and user customs share this exact shape.
+ * A scheme is exactly four slots:
+ *   ink      — text (titles, body)
+ *   paper    — page background
+ *   primary  — main decoration bars / large color blocks
+ *   secondary— auxiliary elements / secondary info
+ *
+ * Emphasis is expressed by weight, size, rules, and whitespace — not by an
+ * extra chromatic slot. `ThemeColors.accent` is still produced for legacy
+ * renderers, derived from primary (deeper mix toward ink).
+ *
+ * Built-in presets and user customs share this exact shape.
  */
+
+import { isDarkColor } from '../utils/color-mix.js';
 
 export type ColorSchemeMode = 'light' | 'dark';
 
 export interface ColorScheme {
-  /** Stable id, e.g. 'ocean-light' */
+  /** Stable id, e.g. 'ocean-blue' */
   name: string;
-  /** Surface polarity: paper-on-light vs ink-on-dark */
-  mode: ColorSchemeMode;
-  /** Chromatic 1 — brand / headings / primary bars */
-  primary: string;
-  /** Chromatic 2 — supporting UI (footer, secondary text chromatic) */
-  secondary: string;
-  /** Chromatic 3 — emphasis (callouts, section bars, highlights) */
-  accent: string;
-  /** Chromatic 4 — spare slot (extra callout / chart / decoration) */
-  tertiary: string;
-  /** Dark neutral (near-black allowed; may carry a slight hue) */
+  /**
+   * Surface polarity hint (drives shiki default). Optional — inferred from
+   * paper luminance when omitted. Does NOT swap ink/paper: ink is always
+   * text, paper is always background.
+   */
+  mode?: ColorSchemeMode;
+  /** Text color: titles + body */
   ink: string;
-  /** Light neutral (near-white allowed; may carry a slight hue) */
+  /** Page background */
   paper: string;
+  /** Primary: main decoration bars, large color blocks */
+  primary: string;
+  /** Secondary: auxiliary elements, secondary information */
+  secondary: string;
 }
 
-/** Chromatic slots in a stable order (for accents[] and callout mapping) */
-export const CHROMATIC_SLOTS = ['primary', 'secondary', 'accent', 'tertiary'] as const;
+/** Chromatic slots exposed on ThemeColors.accents[] (emphasis is non-chromatic) */
+export const CHROMATIC_SLOTS = ['primary', 'secondary'] as const;
 
 export type ChromaticSlot = (typeof CHROMATIC_SLOTS)[number];
+
+/** light/dark from paper luminance (explicit mode wins); ink/paper are never swapped */
+export function resolveSchemeMode(scheme: ColorScheme): ColorSchemeMode {
+  if (scheme.mode) return scheme.mode;
+  return isDarkColor(scheme.paper) ? 'dark' : 'light';
+}
