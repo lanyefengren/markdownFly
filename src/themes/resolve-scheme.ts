@@ -17,7 +17,7 @@
 import type { ColorScheme } from '../models/color-scheme.js';
 import { resolveSchemeMode } from '../models/color-scheme.js';
 import type { ThemeColors } from '../models/theme.js';
-import { isDarkColor, mixHex } from '../utils/color-mix.js';
+import { mixHex } from '../utils/color-mix.js';
 
 export function resolveColorScheme(scheme: ColorScheme): ThemeColors {
   const { primary, secondary, ink, paper } = scheme;
@@ -63,9 +63,4 @@ export function resolveColorScheme(scheme: ColorScheme): ThemeColors {
     tableHeader: mixHex(paper, primary, 0.12),
     tableZebra: mixHex(paper, ink, 0.04),
   };
-}
-
-/** Re-export helper so callers can check surface polarity of a scheme's paper */
-export function isDarkScheme(scheme: ColorScheme): boolean {
-  return isDarkColor(scheme.paper);
 }
