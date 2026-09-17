@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { convert } from './index.js';
 import { expandGlob } from './utils/glob.js';
 import { ProgressReporter, log, setQuiet } from './utils/progress.js';
-import { themes } from './themes/index.js';
+import { hasTheme, themeNames } from './themes/index.js';
 
 const pkg = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
@@ -22,7 +22,7 @@ program
   .description('Markdown to PowerPoint (PPTX)')
   .version(pkg.version ?? '0.0.0');
 
-const themeChoices = Object.keys(themes).filter((name) => name !== 'default');
+const themeChoices = themeNames();
 
 // Main convert command
 program
@@ -56,8 +56,9 @@ program
       }
 
       // Strict theme validation. When -t is omitted, the theme comes from
-      // frontmatter (unknown frontmatter themes fall back to clean with a warning).
-      if (options.theme && !themes[options.theme.toLowerCase()]) {
+      // frontmatter (unknown frontmatter schemes fall back to the default
+      // scheme with a warning inside getTheme).
+      if (options.theme && !hasTheme(options.theme)) {
         usageError(`Unknown theme "${options.theme}". Available themes: ${themeChoices.join(', ')}`);
       }
 

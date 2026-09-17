@@ -96,11 +96,11 @@ pnpm link --global
 # 转换单个文件（输出文件名与输入一致：slides.md → slides.pptx）
 mfly slides.md
 
-# 指定主题（clean, academic, dark, business, warm, aurora, neon, nord, dracula, beige, ink）
-mfly slides.md -t dark
+# 指定色彩方案主题（ocean, ocean-dark）
+mfly slides.md -t ocean-dark
 
 # 指定自定义输出路径
-mfly slides.md -t academic -o presentation.pptx
+mfly slides.md -t ocean -o presentation.pptx
 
 # 批量转换多个 Markdown 文件
 mfly docs/*.md
@@ -122,26 +122,21 @@ mfly docs/*.md --quiet
   `{"ok":true,"durationMs":1234,"files":[{"input":"slides.md","output":"C:/abs/slides.pptx","ok":true}]}`。
   单文件失败时 `ok:false` 并附带 `error` 字段。
 - 仅当**所有**文件转换成功时退出码为 `0`；任意文件失败则退出 `1`（stderr 输出汇总行）。
-- `-t` 指定未知主题名时以退出码 `1` 失败（Markdown frontmatter 中的主题名会回退到 `clean` 并输出警告）。
+- `-t` 指定未知方案名时以退出码 `1` 失败（Markdown frontmatter 中的未知方案名会回退到 `ocean` 并输出警告）。
 - 进度信息输出到 stderr；错误和警告始终输出到 stderr。
 
 ---
 
-## 🎨 内置主题
+## 🎨 内置主题（ColorScheme）
 
-| 主题 | 风格 / 氛围 | 主要颜色 | 适合场景 |
-| :--- | :--- | :--- | :--- |
-| **`clean`** *(默认)* | 现代简洁科技感 | 白色 `#FFFFFF` / 蓝色 `#2563EB` | 通用开发者演讲 & 技术分享 |
-| **`academic`** | 学术 LaTeX Beamer 风格 | 白色 `#FFFFFF` / 普鲁士蓝 `#003366` | 论文、算法、研究答辩 |
-| **`dark`** | 极客暗色模式 | 深板岩 `#0F172A` / 青色 `#38BDF8` | 开发者 Meetup、终端 & 编程主题 |
-| **`business`** | 专业商务风格 | 浅板岩 `#F8FAFC` / 深海军蓝 `#1E3A8A` | 业务评审、高管汇报 & 报告 |
-| **`warm`** | 暖纸 / Marp Gaia 风格 | 暖沙色 `#FDFBF7` / 森林绿 `#065F46` | 主题演讲、设计回顾 & 叙事型 |
-| **`aurora`** | 深色霓虹渐变 | 深海军蓝 `#06091C` / 薄荷蓝 `#7AA2FF` | 产品发布、创意 & 未来感 |
-| **`neon`** | 高对比度赛博风 | 黑色 `#121212` / 青色 `#00E5FF` + 洋红 `#FF4081` | 技术演示、赛博朋克风格 |
-| **`nord`** | 北极霜冻 | 深色 `#2E3440` / 霜蓝 `#88C0D0` | 冷静 dev/design 主题 |
-| **`dracula`** | Dracula 暗色 | 炭灰 `#282A36` / 紫色 `#BD93F9` + 粉色 `#FF79C6` | 代码密集型暗色演讲 |
-| **`beige`** | 暖纸极简 | 米色 `#F7F3DE` / 青铜 `#8B6F3D` + 赤陶 `#C0563C` | 编辑类、工作坊、有机风格 |
-| **`ink`** | 中式水墨 | 宣纸 `#F7F4EC` / 墨色 `#2F3530` + 朱砂 `#C0272D` | 文化、人文、国风主题 |
+主题由四槽色彩方案生成：`ink`（文字）/ `paper`（背景）/ `primary`（主装饰）/ `secondary`（辅助）。旧的 12 套硬编码主题已移除；版式渲染逻辑保持不变，后续通过版式集扩展。
+
+| 方案 | 模式 | ink / paper | primary / secondary | 适合场景 |
+| :--- | :--- | :--- | :--- | :--- |
+| **`ocean`** *(默认)* | 亮 | 深海墨蓝 `#1E4A6F` / 近白海沫 `#F0F8FF` | 亮蓝 `#4F9FD9` / 中蓝 `#2D6A9F` | 通用技术分享、产品介绍 |
+| **`ocean-dark`** | 暗 | 浅沫 `#D6E7F5` / 深海 `#0B1C2E` | 提亮蓝 `#5BAAE8` / `#8BBCDD` | 开发者夜场、深色演示 |
+
+可通过库 API `registerColorScheme` / `createThemeFromScheme` 注册更多方案。
 
 ---
 
@@ -157,7 +152,7 @@ mfly docs/*.md --quiet
 
 ```yaml
 ---
-theme: dark # 可选：clean, academic, dark, business, warm, aurora, neon, nord, dracula, beige, ink
+theme: ocean-dark # 可选：ocean, ocean-dark（ColorScheme 名）
 author: "你的名字"
 footer: "保密 - {page} / {total}" # {page}/{total}/{section}/{title}
 resource_dir: ./assets # 相对图片路径的基础目录

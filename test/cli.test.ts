@@ -67,7 +67,7 @@ describe('mfly CLI contract', () => {
     // Non-string theme (list) in frontmatter → getTheme throws → per-file failure.
     writeFileSync(
       join(tmpDir, 'bad.md'),
-      '---\ntheme: [clean, dark]\n---\n# Bad\n\nContent.\n',
+      '---\ntheme: [ocean, ocean-dark]\n---\n# Bad\n\nContent.\n',
     );
 
     const res = runCli(['bad.md', 'a.md'], tmpDir);
@@ -218,7 +218,7 @@ describe('mermaid does not leak browser globals', () => {
       '# B\n\ncontent\n\n@(background=./batch/bg.png)\n',
     );
 
-    const res = runCli(['aa-mermaid.md', 'bb-background.md', '-t', 'clean'], tmpDir);
+    const res = runCli(['aa-mermaid.md', 'bb-background.md', '-t', 'ocean'], tmpDir);
 
     expect(res.status).toBe(0);
     expect(existsSync(join(tmpDir, 'bb-background.pptx'))).toBe(true);

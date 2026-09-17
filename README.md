@@ -96,11 +96,11 @@ pnpm link --global
 # Convert a single file (named after the input: slides.md → slides.pptx)
 mfly slides.md
 
-# Specify theme (clean, academic, dark, business, warm, aurora, neon, nord, dracula, beige, ink)
-mfly slides.md -t dark
+# Specify color-scheme theme (ocean, ocean-dark)
+mfly slides.md -t ocean-dark
 
 # Specify custom output path
-mfly slides.md -t academic -o presentation.pptx
+mfly slides.md -t ocean -o presentation.pptx
 
 # Batch convert multiple Markdown files
 mfly docs/*.md
@@ -125,27 +125,26 @@ mfly docs/*.md --quiet
   Per-file failures set `ok:false` with an `error` field.
 - Exit code is `0` only when **every** file converts successfully; if any file
   fails the process exits `1` (a summary line is printed to stderr).
-- `-t` with an unknown theme name fails with exit `1` (theme names in markdown
-  frontmatter fall back to `clean` with a warning).
+- `-t` with an unknown scheme name fails with exit `1` (unknown scheme names in
+  markdown frontmatter fall back to `ocean` with a warning).
 - Progress lines go to stderr; errors and warnings always go to stderr.
 
 ---
 
-## 🎨 Built-in Themes
+## 🎨 Built-in Themes (ColorScheme)
 
-| Theme | Style / Mood | Primary Colors | Best For |
-| :--- | :--- | :--- | :--- |
-| **`clean`** *(default)* | Modern clean tech | White `#FFFFFF` / Blue `#2563EB` | General developer presentations & tech sharing |
-| **`academic`** | Scholarly LaTeX Beamer | White `#FFFFFF` / Prussian Blue `#003366` | Papers, algorithms, research defenses |
-| **`dark`** | Dark mode geek | Dark Slate `#0F172A` / Cyan `#38BDF8` | Developer meetups, terminal & coding decks |
-| **`business`** | Professional corporate | Soft Slate `#F8FAFC` / Deep Navy `#1E3A8A` | Business reviews, executive pitches & reports |
-| **`warm`** | Warm paper / Marp Gaia | Warm Sand `#FDFBF7` / Forest Green `#065F46` | Keynotes, design retrospectives & narratives |
-| **`aurora`** | Dark neon gradient | Deep Navy `#06091C` / Mint-Blue `#7AA2FF` | Product launches, creative & futuristic decks |
-| **`neon`** | High-contrast cyber | Black `#121212` / Cyan `#00E5FF` + Magenta `#FF4081` | Tech demos, cyberpunk-style sharing |
-| **`nord`** | Arctic Frost | Dark `#2E3440` / Frost Blue `#88C0D0` | Cold & calm dev/design decks |
-| **`dracula`** | Dracula dark | Charcoal `#282A36` / Purple `#BD93F9` + Pink `#FF79C6` | Code-heavy dark presentations |
-| **`beige`** | Warm paper minimal | Beige `#F7F3DE` / Bronze `#8B6F3D` + Terracotta `#C0563C` | Editorial, workshop, organics |
-| **`ink`** | Chinese ink-wash | Rice Paper `#F7F4EC` / Ink `#2F3530` + Vermilion `#C0272D` | Culture, humanities, Chinese-style decks |
+Themes are generated from a four-slot color scheme: `ink` (text) / `paper`
+(background) / `primary` (decoration) / `secondary` (auxiliary). The legacy 12
+hard-coded themes have been removed; layout rendering is unchanged and will be
+extended later via a layout-set system.
+
+| Scheme | Mode | ink / paper | primary / secondary | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| **`ocean`** *(default)* | Light | Deep sea ink `#1E4A6F` / Sea-foam paper `#F0F8FF` | Bright blue `#4F9FD9` / Mid blue `#2D6A9F` | General tech talks, product intros |
+| **`ocean-dark`** | Dark | Light foam `#D6E7F5` / Deep sea `#0B1C2E` | Lifted blue `#5BAAE8` / `#8BBCDD` | Night sessions, dark decks |
+
+Register more schemes via the library API `registerColorScheme` /
+`createThemeFromScheme`.
 
 ---
 
@@ -161,7 +160,7 @@ mfly docs/*.md --quiet
 
 ```yaml
 ---
-theme: dark # Options: clean, academic, dark, business, warm, aurora, neon, nord, dracula, beige, ink
+theme: ocean-dark # Options: ocean, ocean-dark (ColorScheme names)
 author: "Your Name"
 footer: "Confidential - {page} / {total}" # {page}/{total}/{section}/{title}
 resource_dir: ./assets # Base directory for relative image paths

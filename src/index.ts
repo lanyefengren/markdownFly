@@ -29,7 +29,7 @@ export async function convert(inputPath: string, options: ConvertOptions = {}): 
   // Merge CLI options into config
   if (options.theme) presentation.config.theme = options.theme;
 
-  // Get theme
+  // Get theme (ColorScheme name → Theme)
   const theme = getTheme(presentation.config.theme);
 
   // Determine output path
@@ -45,13 +45,9 @@ export async function convert(inputPath: string, options: ConvertOptions = {}): 
 export { parseMarkdown } from './parser/index.js';
 export {
   getTheme,
-  themes,
-  cleanTheme,
-  academicTheme,
-  darkTheme,
-  businessTheme,
-  warmTheme,
-  defaultTheme,
+  themeNames,
+  hasTheme,
+  DEFAULT_SCHEME_NAME,
   resolveColorScheme,
   createThemeFromScheme,
   getColorScheme,

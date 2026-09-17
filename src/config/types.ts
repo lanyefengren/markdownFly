@@ -3,6 +3,7 @@
  */
 
 export interface MarkdownFlyConfig {
+  /** ColorScheme name (e.g. 'ocean', 'ocean-dark'); resolved via getTheme */
   theme: string;
   author?: string;
   date?: string;

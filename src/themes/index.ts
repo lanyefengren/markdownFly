@@ -1,63 +1,46 @@
 import type { Theme } from '../models/theme.js';
-import { cleanTheme } from './clean.js';
-import { academicTheme } from './academic.js';
-import { darkTheme } from './dark.js';
-import { businessTheme } from './business.js';
-import { warmTheme } from './warm.js';
-import { auroraTheme } from './aurora.js';
-import { neonTheme } from './neon.js';
-import { nordTheme } from './nord.js';
-import { draculaTheme } from './dracula.js';
-import { beigeTheme } from './beige.js';
-import { inkTheme } from './ink.js';
-import { defaultTheme } from './default.js';
+import { createThemeFromScheme } from './from-scheme.js';
+import { getColorScheme, listColorSchemes } from './color-schemes/index.js';
 
-export const themes: Record<string, Theme> = {
-  clean: cleanTheme,
-  academic: academicTheme,
-  dark: darkTheme,
-  business: businessTheme,
-  warm: warmTheme,
-  aurora: auroraTheme,
-  neon: neonTheme,
-  nord: nordTheme,
-  dracula: draculaTheme,
-  beige: beigeTheme,
-  ink: inkTheme,
-  default: defaultTheme,
-};
+/** Fallback scheme when no theme is requested or the name is unknown */
+export const DEFAULT_SCHEME_NAME = 'ocean';
 
+/**
+ * Resolve a scheme name (CLI `-t` / frontmatter `theme`) into a Theme.
+ *
+ * The legacy 12 preset themes were removed; every theme is built from a
+ * ColorScheme via `createThemeFromScheme`. Unknown names warn and fall back
+ * to the default scheme. Non-string values still throw (CLI contract).
+ */
 export function getTheme(name?: string): Theme {
-  if (!name) {
-    return cleanTheme;
-  }
-  if (typeof name !== 'string') {
+  if (name !== undefined && typeof name !== 'string') {
     throw new Error(`Invalid theme value: expected a string, got ${typeof name}`);
   }
-  const theme = themes[name.toLowerCase()];
-  if (!theme) {
-    console.warn(`Theme "${name}" not found, using "clean"`);
-    return cleanTheme;
+
+  const trimmed = name?.trim();
+  if (!trimmed) {
+    return createThemeFromScheme(getColorScheme(DEFAULT_SCHEME_NAME)!);
   }
-  return theme;
+
+  const scheme = getColorScheme(trimmed);
+  if (!scheme) {
+    console.warn(`Theme "${trimmed}" not found, using "${DEFAULT_SCHEME_NAME}"`);
+    return createThemeFromScheme(getColorScheme(DEFAULT_SCHEME_NAME)!);
+  }
+  return createThemeFromScheme(scheme);
 }
 
-export {
-  cleanTheme,
-  academicTheme,
-  darkTheme,
-  businessTheme,
-  warmTheme,
-  auroraTheme,
-  neonTheme,
-  nordTheme,
-  draculaTheme,
-  beigeTheme,
-  inkTheme,
-  defaultTheme,
-};
+/** Lower-cased scheme names currently registered (CLI choices, tests). */
+export function themeNames(): string[] {
+  return listColorSchemes().map((s) => s.name.toLowerCase());
+}
 
-// ColorScheme pipeline (new path; legacy themes above stay untouched)
+/** Whether `name` resolves to a registered ColorScheme. */
+export function hasTheme(name?: string): boolean {
+  return Boolean(name && getColorScheme(name));
+}
+
+// ColorScheme pipeline
 export { resolveColorScheme } from './resolve-scheme.js';
 export { createThemeFromScheme } from './from-scheme.js';
 export type { ThemeFromSchemeOptions } from './from-scheme.js';
