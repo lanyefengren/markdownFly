@@ -282,7 +282,6 @@
       "codeText": "E8E0CC",
       "titleBackground": "8B6F3D",
       "titleText": "2F2A1F",
-      "highlightBackground": "F0E2B8",
       "backgroundGradient": {
         "from": "F7F3DE",
         "to": "F1E8D2",
@@ -316,7 +315,6 @@
       "codeText": "D8D2C0",
       "titleBackground": "30352F",
       "titleText": "262626",
-      "highlightBackground": "EBDDCD",
       "backgroundGradient": {
         "from": "F7F4EC",
         "to": "EFE8DA",

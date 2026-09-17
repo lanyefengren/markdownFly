@@ -11,7 +11,8 @@ export const inkColors: ThemeColors = {
   codeText: 'D8D2C0',
   titleBackground: '30352F',
   titleText: '262626',
-  highlightBackground: 'EBDDCD',
+  // highlightBackground omitted: light band is unreadable under Shiki dark
+  // tokens — highlightBackgroundFor() derives a dark band from codeBackground.
   backgroundGradient: {
     from: 'F7F4EC',
     to: 'EFE8DA',
