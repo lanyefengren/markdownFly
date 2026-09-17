@@ -106,10 +106,10 @@ describe('resolveColorScheme', () => {
     expect(c.accents).toEqual(['2563EB', '64748B']);
   });
 
-  it('derives code panel as a distinct surface', () => {
+  it('light scheme uses a fixed white code panel', () => {
     const c = resolveColorScheme(lightScheme);
-    expect(c.codeBackground).not.toBe(c.background);
-    expect(isDarkColor(c.codeBackground!)).toBe(true);
+    expect(c.codeBackground).toBe('FFFFFF');
+    expect(isDarkColor(c.codeBackground!)).toBe(false);
   });
 
   it('every produced hex is valid RRGGBB', () => {

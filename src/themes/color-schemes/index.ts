@@ -15,7 +15,10 @@ import { oceanScheme } from './ocean.js';
 import { oceanDarkScheme } from './ocean-dark.js';
 
 /** All built-in schemes. Keep in sync with *.ts files in this folder. */
-const builtInSchemes: ColorScheme[] = [oceanScheme, oceanDarkScheme];
+const builtInSchemes: ColorScheme[] = 
+  [ oceanScheme, 
+    oceanDarkScheme
+];
 
 export const colorSchemes: Record<string, ColorScheme> = Object.fromEntries(
   builtInSchemes.map((s) => [s.name.toLowerCase(), s]),

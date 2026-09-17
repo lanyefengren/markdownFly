@@ -30,9 +30,10 @@ export function resolveColorScheme(scheme: ColorScheme): ThemeColors {
   // Emphasis stand-in for legacy accent consumers: deeper primary
   const accent = mixHex(primary, ink, 0.45);
 
-  // Code block: panel distinct from page, readable text
-  const codeBackground = dark ? mixHex(paper, ink, 0.35) : mixHex(paper, ink, 0.85);
-  const codeText = dark ? mixHex(ink, paper, 0.15) : mixHex(ink, paper, 0.05);
+  // Code block: light decks use a fixed white panel (matches github-light
+  // shiki); dark decks keep a lifted dark panel so tokens stay readable.
+  const codeBackground = dark ? mixHex(paper, ink, 0.35) : 'FFFFFF';
+  const codeText = dark ? mixHex(ink, paper, 0.15) : ink;
 
   // Cover: primary-tinted surface + ink text
   const titleBackground = mixHex(paper, primary, 0.12);

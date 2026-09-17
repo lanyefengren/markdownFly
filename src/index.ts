@@ -58,8 +58,10 @@ export {
   listColorSchemes,
   registerColorScheme,
   oceanScheme,
+  oceanDarkScheme,
 } from './themes/index.js';
 export { renderDiagram, isDiagramLanguage } from './diagrams/index.js';
+export { renderPresentation } from './renderer/index.js';
 export type { Presentation, SlideNode, SlideElement } from './models/slide.js';
 export type { Theme } from './models/theme.js';
 export type { MarkdownFlyConfig } from './config/types.js';
