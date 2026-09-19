@@ -16,15 +16,57 @@ import { fitInBox, fitImageWithOptions } from '../../utils/image-fit.js';
 import { tableToChartOption } from '../../utils/table-chart.js';
 import { log } from '../../utils/progress.js';
 import { readFileSync } from 'node:fs';
+import {
+  addHRuler,
+  extraBoolean,
+  layoutSpec,
+  resolveSideMargins,
+  ruleColor,
+  specNumber,
+  titleRuleHeight,
+  titleRuleRole,
+} from './layout-spec.js';
 
 // Slide dimensions (16:9 LAYOUT_WIDE)
 const SLIDE_W = 13.33;
 const SLIDE_H = 7.5;
-const MARGIN = 0.6;
-const CONTENT_W = SLIDE_W - MARGIN * 2;
-const TITLE_H = 0.9;
-const BOTTOM_MARGIN = 0.45;
-const GRID_GAP = 0.25;
+/** Fallbacks matching production hard-coded values (layout-scheme legacy) */
+const DEFAULT_MARGIN = 0.6;
+const DEFAULT_TITLE_H = 0.9;
+const DEFAULT_BOTTOM_MARGIN = 0.45;
+const DEFAULT_GRID_GAP = 0.25;
+
+interface ContentMetrics {
+  marginLeft: number;
+  marginRight: number;
+  titleH: number;
+  contentW: number;
+  bottom: number;
+  gridGap: number;
+  contentPadding: number;
+  titleRule: boolean;
+  titleRuleH: number;
+  titleRuleColor: 'primary' | 'secondary' | 'divider';
+}
+
+function contentMetrics(theme: Theme): ContentMetrics {
+  const spec = layoutSpec(theme, 'content');
+  const { left, right } = resolveSideMargins(spec, DEFAULT_MARGIN);
+  const titleH = specNumber(spec.titleHeight, DEFAULT_TITLE_H);
+  const contentPadding = specNumber(spec.contentPadding, 0);
+  return {
+    marginLeft: left,
+    marginRight: right,
+    titleH,
+    contentW: Math.max(2, SLIDE_W - left - right),
+    bottom: DEFAULT_BOTTOM_MARGIN,
+    gridGap: DEFAULT_GRID_GAP,
+    contentPadding,
+    titleRule: extraBoolean(spec, 'titleRule', true),
+    titleRuleH: titleRuleHeight(spec, 0.04),
+    titleRuleColor: titleRuleRole(spec),
+  };
+}
 
 /** Extension → MIME map used when embedding images as base64 data */
 const IMAGE_MIME: Record<string, string> = {
@@ -38,10 +80,13 @@ const IMAGE_MIME: Record<string, string> = {
 };
 
 /** Vertical space available below the title bar */
-function contentAreaInsets(node: SlideNode): { top: number; bottom: number } {
+function contentAreaInsets(
+  node: SlideNode,
+  metrics: ContentMetrics,
+): { top: number; bottom: number } {
   return {
-    top: node.title ? 0.3 + TITLE_H + 0.2 : 0.3,
-    bottom: BOTTOM_MARGIN,
+    top: node.title ? 0.3 + metrics.titleH + 0.2 : 0.3,
+    bottom: metrics.bottom,
   };
 }
 
@@ -86,23 +131,30 @@ export async function renderContentSlide(
   theme: Theme,
   ctx: RenderContext,
 ): Promise<void> {
-  const { top } = contentAreaInsets(node);
+  const metrics = contentMetrics(theme);
+  const { marginLeft, titleH, contentW, gridGap, contentPadding } = metrics;
+  const { top } = contentAreaInsets(node, metrics);
+  const pad = contentPadding > 0 ? contentPadding : 0;
+  const drawX = marginLeft + pad;
+  const drawW = contentW - pad * 2;
 
-  // Title bar
+  // Title bar + rule
   if (node.title) {
-    slide.addShape('rect' as PptxGenJS.ShapeType, {
-      x: MARGIN,
-      y: 0.3 + TITLE_H - 0.05,
-      w: CONTENT_W,
-      h: 0.04,
-      fill: { color: theme.colors.primary },
-    });
+    if (metrics.titleRule && metrics.titleRuleH > 0) {
+      addHRuler(slide, {
+        x: marginLeft,
+        y: 0.3 + titleH - metrics.titleRuleH - 0.01,
+        w: contentW,
+        h: metrics.titleRuleH,
+        color: ruleColor(theme, metrics.titleRuleColor),
+      });
+    }
 
     slide.addText(node.title, {
-      x: MARGIN,
+      x: marginLeft,
       y: 0.3,
-      w: CONTENT_W,
-      h: TITLE_H,
+      w: contentW,
+      h: titleH,
       fontSize: theme.fontSize.heading,
       fontFace: theme.fonts.heading,
       color: theme.colors.primary,
@@ -113,14 +165,14 @@ export async function renderContentSlide(
 
   const grid = splitGrid(prepareElements(node));
   const rows = grid.length;
-  const availH = SLIDE_H - top - BOTTOM_MARGIN - GRID_GAP * (rows - 1);
+  const availH = SLIDE_H - top - metrics.bottom - gridGap * (rows - 1);
 
   // Rows are sized by estimated content weight (like flexbox), not evenly —
   // a row with one short line shouldn't eat half the slide. Shrunk to fit.
   const ests = grid.map((columns) =>
     Math.max(
       0.8,
-      ...columns.map((c) => estimateColumnHeight(c, (CONTENT_W - GRID_GAP * (columns.length - 1)) / columns.length, theme)),
+      ...columns.map((c) => estimateColumnHeight(c, (drawW - gridGap * (columns.length - 1)) / columns.length, theme)),
     ),
   );
   const totalEst = ests.reduce((a, b) => a + b, 0);
@@ -130,20 +182,20 @@ export async function renderContentSlide(
   for (let r = 0; r < rows; r++) {
     const columns = grid[r];
     const cols = columns.length;
-    const colW = (CONTENT_W - GRID_GAP * (cols - 1)) / cols;
+    const colW = (drawW - gridGap * (cols - 1)) / cols;
     const rowH = ests[r] * scale;
 
     for (let c = 0; c < cols; c++) {
       await renderColumn(
         slide,
         columns[c],
-        { x: MARGIN + c * (colW + GRID_GAP), y, w: colW, h: rowH },
+        { x: drawX + c * (colW + gridGap), y, w: colW, h: rowH },
         node,
         theme,
         ctx,
       );
     }
-    y += rowH + GRID_GAP;
+    y += rowH + gridGap;
   }
 }
 

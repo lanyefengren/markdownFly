@@ -352,6 +352,27 @@ function detectLayout(
     return 'quote';
   }
 
+  // Pure image pages (layout-set step 3): 1–3 images, no substantial body.
+  // Existing rules above win; only additive. Mixed / heavy text stays `content`.
+  if (nonEmptyElements.length > 0) {
+    const images = nonEmptyElements.filter((e) => e.type === 'image');
+    const others = nonEmptyElements.filter(
+      (e) => e.type !== 'image' && e.type !== 'text',
+    );
+    const texts = nonEmptyElements.filter((e) => e.type === 'text');
+    const substantialText = texts.some((e) => e.type === 'text' && e.content.trim().length > 40);
+    if (
+      others.length === 0 &&
+      !substantialText &&
+      images.length >= 1 &&
+      images.length <= 3
+    ) {
+      if (images.length === 1) return 'image-single';
+      if (images.length === 2) return 'image-double';
+      return 'image-triple';
+    }
+  }
+
   return 'content';
 }
 

@@ -1,4 +1,5 @@
 import type { Theme } from '../models/theme.js';
+import type { LayoutScheme } from '../models/layout-scheme.js';
 import type { TextScheme } from '../models/text-set.js';
 import { createThemeFromScheme } from './from-scheme.js';
 import { getColorScheme, listColorSchemes } from './color-schemes/index.js';
@@ -10,6 +11,8 @@ export const DEFAULT_SCHEME_NAME = 'ocean';
 export interface GetThemeOptions {
   /** Text scheme name or resolved TextScheme (defaults to `system`) */
   textScheme?: string | TextScheme;
+  /** Layout scheme name or resolved LayoutScheme; omitted → legacy layout fallbacks */
+  layoutScheme?: string | LayoutScheme;
 }
 
 /**
@@ -76,5 +79,18 @@ export {
   bridgeFontsFromTextScheme,
   bridgeFontSizesFromTextScheme,
   resolveTextSchemeOption,
+  resolveLayoutSchemeOption,
 } from './from-scheme.js';
 export { defineUniformTextScheme } from '../models/text-set.js';
+
+// Layout-set pipeline (step 3)
+export {
+  layoutSchemes,
+  getLayoutScheme,
+  listLayoutSchemes,
+  registerLayoutScheme,
+  folioLayoutScheme,
+  legacyLayoutScheme,
+} from './layout-schemes/index.js';
+export { DEFAULT_LAYOUT_SCHEME_NAME } from '../models/layout-scheme.js';
+export type { LayoutScheme } from '../models/layout-scheme.js';

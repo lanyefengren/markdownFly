@@ -14,8 +14,10 @@ export interface ConvertOptions {
   output?: string;
   /** ColorScheme name */
   theme?: string;
-  /** TextScheme name (API-ready; CLI flag deferred to W5.7) */
+  /** TextScheme name (API-ready; CLI flag deferred) */
   textScheme?: string;
+  /** LayoutScheme name (API-ready; CLI flag deferred) */
+  layoutScheme?: string;
 }
 
 /**
@@ -32,9 +34,10 @@ export async function convert(inputPath: string, options: ConvertOptions = {}): 
   // Merge CLI options into config
   if (options.theme) presentation.config.theme = options.theme;
 
-  // Get theme (ColorScheme name → Theme; optional TextScheme)
+  // Get theme (ColorScheme name → Theme; optional TextScheme / LayoutScheme)
   const theme = getTheme(presentation.config.theme, {
     textScheme: options.textScheme,
+    layoutScheme: options.layoutScheme,
   });
 
   // Determine output path
@@ -70,6 +73,13 @@ export {
   sourceHanSerifTextScheme,
   DEFAULT_TEXT_SCHEME_NAME,
   defineUniformTextScheme,
+  layoutSchemes,
+  getLayoutScheme,
+  listLayoutSchemes,
+  registerLayoutScheme,
+  folioLayoutScheme,
+  legacyLayoutScheme,
+  DEFAULT_LAYOUT_SCHEME_NAME,
 } from './themes/index.js';
 export { renderDiagram, isDiagramLanguage } from './diagrams/index.js';
 export { renderPresentation } from './renderer/index.js';
@@ -77,6 +87,7 @@ export type { Presentation, SlideNode, SlideElement } from './models/slide.js';
 export type { Theme } from './models/theme.js';
 export type { MarkdownFlyConfig } from './config/types.js';
 export type { ColorScheme, ColorSchemeMode } from './models/color-scheme.js';
+export type { LayoutScheme } from './models/layout-scheme.js';
 export type {
   FontStyleEntry,
   TextScheme,

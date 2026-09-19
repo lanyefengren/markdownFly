@@ -13,6 +13,9 @@ import { renderSectionSlide } from './section.js';
 import { renderContentSlide } from './content.js';
 import { renderCodeSlide } from './code.js';
 import { renderQuoteSlide } from './quote.js';
+import { renderClosingSlide } from './closing.js';
+import { renderImageSlide } from './image-pages.js';
+import { extraString, layoutSpec, resolveSideMargins, specNumber } from './layout-spec.js';
 
 /** Context passed to layout renderers for async operations */
 export interface RenderContext {
@@ -65,6 +68,22 @@ export async function renderSlideLayout(
       renderQuoteSlide(slide, node, theme);
       break;
 
+    case 'closing':
+      renderClosingSlide(slide, node, theme);
+      break;
+
+    case 'image-single':
+      await renderImageSlide(slide, node, theme, ctx, 1);
+      break;
+
+    case 'image-double':
+      await renderImageSlide(slide, node, theme, ctx, 2);
+      break;
+
+    case 'image-triple':
+      await renderImageSlide(slide, node, theme, ctx, 3);
+      break;
+
     case 'content':
     default:
       await renderContentSlide(slide, node, theme, ctx);
@@ -76,19 +95,57 @@ export async function renderSlideLayout(
     slide.addNotes(node.notes);
   }
 
-  // Footer / page number (skip cover slides)
+  // Footer / page number (skip cover, closing, blank)
   if (node.layout !== 'title' && node.layout !== 'closing' && node.layout !== 'blank') {
     const footerText = renderFooter(node, theme, ctx);
+    const footerSpec = layoutSpec(theme, 'footer');
+    const sides = resolveSideMargins(
+      footerSpec,
+      specNumber(theme.layouts?.content?.margin, 0.6),
+    );
+    // Prefer content-side asymmetric margins when footer omits its own
+    const marginLeft =
+      footerSpec.extra?.marginLeft !== undefined
+        ? sides.left
+        : specNumber(
+            theme.layouts?.content?.extra?.marginLeft as number | undefined,
+            specNumber(theme.layouts?.content?.margin, sides.left),
+          );
+    const marginRight =
+      footerSpec.extra?.marginRight !== undefined
+        ? sides.right
+        : specNumber(
+            theme.layouts?.content?.extra?.marginRight as number | undefined,
+            specNumber(theme.layouts?.content?.margin, sides.right),
+          );
+    const contentW = Math.max(2, 13.33 - marginLeft - marginRight);
+    const showDivider =
+      theme.styles?.footerDivider ?? footerSpec.footerDivider ?? false;
+    const footerAlign = extraString(footerSpec, 'footerAlign', 'right') as
+      | 'left'
+      | 'center'
+      | 'right';
+
+    if (showDivider) {
+      slide.addShape('rect' as PptxGenJS.ShapeType, {
+        x: marginLeft,
+        y: 7.08,
+        w: contentW,
+        h: 0.015,
+        fill: { color: theme.colors.divider ?? theme.colors.secondary },
+      });
+    }
+
     if (footerText) {
       slide.addText(footerText, {
-        x: 0.6,
+        x: marginLeft,
         y: 7.16,
-        w: 12.13,
+        w: contentW,
         h: 0.28,
         fontSize: theme.fontSize.small - 1,
         fontFace: theme.fonts.body,
         color: theme.colors.secondary,
-        align: 'right',
+        align: footerAlign,
         valign: 'middle',
       });
     }

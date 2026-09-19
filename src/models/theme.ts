@@ -112,10 +112,14 @@ export interface ThemeLayouts {
   title?: ThemeLayoutSpec;
   section?: ThemeLayoutSpec;
   content?: ThemeLayoutSpec;
+  code?: ThemeLayoutSpec;
+  quote?: ThemeLayoutSpec;
   closing?: ThemeLayoutSpec;
   imageSingle?: ThemeLayoutSpec;
   imageDouble?: ThemeLayoutSpec;
   imageTriple?: ThemeLayoutSpec;
+  /** Footer geometry / divider (consumed by layouts/index.ts) */
+  footer?: ThemeLayoutSpec;
 }
 
 export interface ThemeStyles {
@@ -127,6 +131,8 @@ export interface ThemeStyles {
   coverBadge?: boolean;
   /** Section-page accent-bar width in inches */
   sectionBarWidth?: number;
+  /** Whether non-cover pages draw a footer divider line */
+  footerDivider?: boolean;
 }
 
 /** Per-role text style; every property overrides the matching legacy field */
@@ -203,4 +209,9 @@ export interface Theme {
   textScheme?: TextScheme;
   /** Position → FontStyleEntry from the scheme (object references) */
   textStyles?: Partial<Record<TextSchemePositionKey, FontStyleEntry>>;
+
+  // --- Layout-set layer (optional) ---
+
+  /** Activated LayoutScheme name (e.g. 'default' / 'legacy') */
+  layoutSet?: string;
 }

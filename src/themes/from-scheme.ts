@@ -10,7 +10,8 @@
 
 import type { ColorScheme } from '../models/color-scheme.js';
 import { resolveSchemeMode } from '../models/color-scheme.js';
-import type { Theme, ThemeFonts, ThemeFontSizes } from '../models/theme.js';
+import type { LayoutScheme } from '../models/layout-scheme.js';
+import type { Theme, ThemeFonts, ThemeFontSizes, ThemeLayouts, ThemeStyles } from '../models/theme.js';
 import {
   DEFAULT_TEXT_SCHEME_NAME,
   type FontStyleEntry,
@@ -18,6 +19,7 @@ import {
   type TextSchemePositionKey,
 } from '../models/text-set.js';
 import { resolveColorScheme } from './resolve-scheme.js';
+import { getLayoutScheme } from './layout-schemes/index.js';
 import { getTextScheme } from './text-schemes/text-index.js';
 
 export interface ThemeFromSchemeOptions {
@@ -30,6 +32,8 @@ export interface ThemeFromSchemeOptions {
   avoid?: string[];
   /** Text scheme name or object; defaults to `system` */
   textScheme?: string | TextScheme;
+  /** Layout scheme name or object; omitted → layouts/styles stay unset (legacy) */
+  layoutScheme?: string | LayoutScheme;
 }
 
 export function resolveTextSchemeOption(
@@ -82,6 +86,42 @@ function textStylesFromScheme(
   return { ...scheme.positions };
 }
 
+/**
+ * Resolve optional layoutScheme → scheme payload + layouts/styles.
+ * Omitted or unknown name → layouts/styles/layoutSet undefined (legacy hard-coded fallbacks).
+ */
+export function resolveLayoutSchemeOption(
+  input?: string | LayoutScheme,
+): {
+  layouts?: ThemeLayouts;
+  styles?: ThemeStyles;
+  layoutSet?: string;
+  scheme?: LayoutScheme;
+} {
+  if (input === undefined) return {};
+  if (typeof input === 'object' && input !== null) {
+    return {
+      layouts: input.layouts,
+      styles: input.styles,
+      layoutSet: input.name,
+      scheme: input,
+    };
+  }
+  const name = input.trim();
+  if (!name) return {};
+  const scheme = getLayoutScheme(name);
+  if (!scheme) {
+    console.warn(`Layout scheme "${name}" not found, using built-in layout defaults`);
+    return {};
+  }
+  return {
+    layouts: scheme.layouts,
+    styles: scheme.styles,
+    layoutSet: scheme.name,
+    scheme,
+  };
+}
+
 export function createThemeFromScheme(
   scheme: ColorScheme,
   options: ThemeFromSchemeOptions = {},
@@ -90,6 +130,7 @@ export function createThemeFromScheme(
 
   const fonts = options.fonts ?? bridgeFontsFromTextScheme(textScheme);
   const fontSize = options.fontSize ?? bridgeFontSizesFromTextScheme(textScheme);
+  const fromLayout = resolveLayoutSchemeOption(options.layoutScheme);
 
   return {
     name: scheme.name,
@@ -99,12 +140,13 @@ export function createThemeFromScheme(
     shikiTheme:
       options.shikiTheme ??
       (resolveSchemeMode(scheme) === 'dark' ? 'github-dark' : 'github-light'),
-    layouts: options.layouts,
-    styles: options.styles,
+    layouts: options.layouts ?? fromLayout.layouts,
+    styles: options.styles ?? fromLayout.styles,
     typography: options.typography,
     avoid: options.avoid,
     textSet: textScheme.name,
     textScheme,
     textStyles: textStylesFromScheme(textScheme),
+    layoutSet: fromLayout.layoutSet,
   };
 }
