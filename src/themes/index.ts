@@ -1,53 +1,117 @@
 import type { Theme } from '../models/theme.js';
 import type { LayoutScheme } from '../models/layout-scheme.js';
 import type { TextScheme } from '../models/text-set.js';
+import type { ThemePreset } from '../models/theme-preset.js';
+import { DEFAULT_THEME_NAME } from '../models/theme-preset.js';
 import { createThemeFromScheme } from './from-scheme.js';
 import { getColorScheme, listColorSchemes } from './color-schemes/index.js';
+import { getThemePreset, listThemePresets } from './presets/index.js';
 import { DEFAULT_TEXT_SCHEME_NAME } from './text-schemes/text-index.js';
+import { resolveThemePresetOption } from './from-scheme.js';
 
-/** Fallback scheme when no theme is requested or the name is unknown */
+/** Color-only fallback when a ColorScheme name is unknown */
 export const DEFAULT_SCHEME_NAME = 'ocean';
 
 export interface GetThemeOptions {
-  /** Text scheme name or resolved TextScheme (defaults to `system`) */
+  /** Text scheme name or resolved TextScheme (overrides preset slot) */
   textScheme?: string | TextScheme;
-  /** Layout scheme name or resolved LayoutScheme; omitted → legacy layout fallbacks */
+  /** Layout scheme name or resolved LayoutScheme (overrides preset slot) */
   layoutScheme?: string | LayoutScheme;
+  /**
+   * Optional ThemePreset object for advanced callers.
+   * The user-facing path is the `name` argument (`-t` / frontmatter `theme`).
+   */
+  preset?: string | ThemePreset;
+}
+
+type ThemeNameResolution =
+  | { kind: 'preset'; preset: ThemePreset }
+  | { kind: 'color'; colorName: string }
+  | { kind: 'default' };
+
+/**
+ * Resolve a user-facing theme name (CLI `-t` / frontmatter `theme`).
+ * Order: ThemePreset → ColorScheme → default theme (blue).
+ */
+function resolveThemeName(name?: string | null): ThemeNameResolution {
+  const trimmed = typeof name === 'string' ? name.trim() : '';
+  const key = trimmed || DEFAULT_THEME_NAME;
+
+  const preset = getThemePreset(key);
+  if (preset) return { kind: 'preset', preset };
+
+  if (getColorScheme(key)) return { kind: 'color', colorName: key };
+
+  return { kind: 'default' };
 }
 
 /**
- * Resolve a scheme name (CLI `-t` / frontmatter `theme`) into a Theme.
+ * Build a Theme from a user-facing theme name.
  *
- * The legacy 12 preset themes were removed; every theme is built from a
- * ColorScheme via `createThemeFromScheme`. Unknown names warn and fall back
- * to the default scheme. Non-string values still throw (CLI contract).
+ * - `blue` (or any ThemePreset) → full package (color × text × layout)
+ * - `ocean` / `ocean-dark` (ColorScheme only) → color path; text `system`;
+ *   layouts stay unset unless `options.layoutScheme` is passed
+ * - omitted / unknown → default theme `blue` (unknown warns)
+ *
+ * Non-string `name` values still throw (CLI contract).
  */
 export function getTheme(name?: string, options: GetThemeOptions = {}): Theme {
-  if (name !== undefined && typeof name !== 'string') {
+  if (name !== undefined && name !== null && typeof name !== 'string') {
     throw new Error(`Invalid theme value: expected a string, got ${typeof name}`);
   }
 
-  const trimmed = name?.trim();
-  if (!trimmed) {
-    return createThemeFromScheme(getColorScheme(DEFAULT_SCHEME_NAME)!, options);
+  // Advanced: explicit preset object still wins for its slots when provided
+  const explicitPreset = resolveThemePresetOption(options.preset);
+  const resolved = resolveThemeName(name);
+
+  if (resolved.kind === 'preset' || (resolved.kind === 'default' && !explicitPreset)) {
+    const preset =
+      resolved.kind === 'preset'
+        ? resolved.preset
+        : (getThemePreset(DEFAULT_THEME_NAME) as ThemePreset);
+
+    if (resolved.kind === 'default' && name?.trim()) {
+      console.warn(`Theme "${name}" not found, using "${preset.name}"`);
+    }
+
+    return createThemeFromScheme(getColorScheme(preset.colorScheme)!, {
+      textScheme: options.textScheme ?? preset.textScheme,
+      layoutScheme: options.layoutScheme ?? preset.layoutScheme,
+      presetSet: preset.name,
+    });
   }
 
-  const scheme = getColorScheme(trimmed);
-  if (!scheme) {
-    console.warn(`Theme "${trimmed}" not found, using "${DEFAULT_SCHEME_NAME}"`);
-    return createThemeFromScheme(getColorScheme(DEFAULT_SCHEME_NAME)!, options);
+  if (resolved.kind === 'default' && explicitPreset) {
+    // unknown name but options.preset provided
+    console.warn(`Theme "${name}" not found, using preset "${explicitPreset.name}"`);
+    return createThemeFromScheme(getColorScheme(explicitPreset.colorScheme)!, {
+      textScheme: options.textScheme ?? explicitPreset.textScheme,
+      layoutScheme: options.layoutScheme ?? explicitPreset.layoutScheme,
+      presetSet: explicitPreset.name,
+    });
   }
-  return createThemeFromScheme(scheme, options);
+
+  // ColorScheme-only path (README `-t ocean` / `-t ocean-dark`)
+  const colorName =
+    resolved.kind === 'color' ? resolved.colorName : explicitPreset!.colorScheme;
+  return createThemeFromScheme(getColorScheme(colorName)!, {
+    textScheme: options.textScheme ?? explicitPreset?.textScheme,
+    layoutScheme: options.layoutScheme ?? explicitPreset?.layoutScheme,
+    presetSet: explicitPreset?.name,
+  });
 }
 
-/** Lower-cased scheme names currently registered (CLI choices, tests). */
+/** User-facing theme names: presets first, then color-only schemes. */
 export function themeNames(): string[] {
-  return listColorSchemes().map((s) => s.name.toLowerCase());
+  const presets = listThemePresets().map((p) => p.name.toLowerCase());
+  const colors = listColorSchemes().map((s) => s.name.toLowerCase());
+  return [...presets, ...colors.filter((c) => !presets.includes(c))];
 }
 
-/** Whether `name` resolves to a registered ColorScheme. */
+/** Whether `name` is a known user-facing theme (preset or color scheme). */
 export function hasTheme(name?: string): boolean {
-  return Boolean(name && getColorScheme(name));
+  if (!name) return false;
+  return Boolean(getThemePreset(name) || getColorScheme(name));
 }
 
 // ColorScheme pipeline
@@ -94,3 +158,17 @@ export {
 } from './layout-schemes/index.js';
 export { DEFAULT_LAYOUT_SCHEME_NAME } from '../models/layout-scheme.js';
 export type { LayoutScheme } from '../models/layout-scheme.js';
+
+// Theme-preset pipeline (step 5) — presets are user-facing theme names
+export {
+  themePresets,
+  getThemePreset,
+  listThemePresets,
+  registerThemePreset,
+  themePresetNames,
+  hasThemePreset,
+  bluePreset,
+} from './presets/index.js';
+export { DEFAULT_THEME_NAME, DEFAULT_PRESET_NAME } from '../models/theme-preset.js';
+export type { ThemePreset } from '../models/theme-preset.js';
+export { resolveThemePresetOption } from './from-scheme.js';

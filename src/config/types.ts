@@ -3,7 +3,10 @@
  */
 
 export interface MarkdownFlyConfig {
-  /** ColorScheme name (e.g. 'ocean', 'ocean-dark'); resolved via getTheme */
+  /**
+   * Theme name for `getTheme` / CLI `-t`.
+   * Resolves ThemePreset first (e.g. 'blue'), then ColorScheme (e.g. 'ocean').
+   */
   theme: string;
   author?: string;
   date?: string;

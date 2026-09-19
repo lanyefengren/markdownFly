@@ -12,11 +12,14 @@ import { getOutputPath } from './utils/output-namer.js';
 
 export interface ConvertOptions {
   output?: string;
-  /** ColorScheme name */
+  /**
+   * User-facing theme name (same as CLI `-t` / frontmatter `theme`).
+   * ThemePreset first (e.g. 'blue'), then ColorScheme (e.g. 'ocean').
+   */
   theme?: string;
-  /** TextScheme name (API-ready; CLI flag deferred) */
+  /** TextScheme override (API-only; CLI flag deferred) */
   textScheme?: string;
-  /** LayoutScheme name (API-ready; CLI flag deferred) */
+  /** LayoutScheme override (API-only; CLI flag deferred) */
   layoutScheme?: string;
 }
 
@@ -31,10 +34,9 @@ export async function convert(inputPath: string, options: ConvertOptions = {}): 
   // Parse
   const presentation = parseMarkdown(markdown);
 
-  // Merge CLI options into config
+  // CLI/API theme overrides frontmatter; omitted → default theme (blue)
   if (options.theme) presentation.config.theme = options.theme;
 
-  // Get theme (ColorScheme name → Theme; optional TextScheme / LayoutScheme)
   const theme = getTheme(presentation.config.theme, {
     textScheme: options.textScheme,
     layoutScheme: options.layoutScheme,
@@ -80,6 +82,16 @@ export {
   folioLayoutScheme,
   legacyLayoutScheme,
   DEFAULT_LAYOUT_SCHEME_NAME,
+  themePresets,
+  getThemePreset,
+  listThemePresets,
+  registerThemePreset,
+  themePresetNames,
+  hasThemePreset,
+  bluePreset,
+  DEFAULT_THEME_NAME,
+  DEFAULT_PRESET_NAME,
+  resolveThemePresetOption,
 } from './themes/index.js';
 export { renderDiagram, isDiagramLanguage } from './diagrams/index.js';
 export { renderPresentation } from './renderer/index.js';
@@ -88,6 +100,7 @@ export type { Theme } from './models/theme.js';
 export type { MarkdownFlyConfig } from './config/types.js';
 export type { ColorScheme, ColorSchemeMode } from './models/color-scheme.js';
 export type { LayoutScheme } from './models/layout-scheme.js';
+export type { ThemePreset } from './models/theme-preset.js';
 export type {
   FontStyleEntry,
   TextScheme,

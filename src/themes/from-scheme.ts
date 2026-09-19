@@ -12,6 +12,7 @@ import type { ColorScheme } from '../models/color-scheme.js';
 import { resolveSchemeMode } from '../models/color-scheme.js';
 import type { LayoutScheme } from '../models/layout-scheme.js';
 import type { Theme, ThemeFonts, ThemeFontSizes, ThemeLayouts, ThemeStyles } from '../models/theme.js';
+import type { ThemePreset } from '../models/theme-preset.js';
 import {
   DEFAULT_TEXT_SCHEME_NAME,
   type FontStyleEntry,
@@ -20,6 +21,7 @@ import {
 } from '../models/text-set.js';
 import { resolveColorScheme } from './resolve-scheme.js';
 import { getLayoutScheme } from './layout-schemes/index.js';
+import { getThemePreset } from './presets/index.js';
 import { getTextScheme } from './text-schemes/text-index.js';
 
 export interface ThemeFromSchemeOptions {
@@ -34,6 +36,24 @@ export interface ThemeFromSchemeOptions {
   textScheme?: string | TextScheme;
   /** Layout scheme name or object; omitted → layouts/styles stay unset (legacy) */
   layoutScheme?: string | LayoutScheme;
+  /** ThemePreset name for provenance (`theme.presetSet`); does not drive slots here */
+  presetSet?: string;
+}
+
+/** Resolve preset option → object; unknown name warns and returns undefined. */
+export function resolveThemePresetOption(
+  input?: string | ThemePreset,
+): ThemePreset | undefined {
+  if (input === undefined || input === null) return undefined;
+  if (typeof input === 'object') return input;
+  const name = input.trim();
+  if (!name) return undefined;
+  const preset = getThemePreset(name);
+  if (!preset) {
+    console.warn(`Theme preset "${name}" not found; using scheme defaults only`);
+    return undefined;
+  }
+  return preset;
 }
 
 export function resolveTextSchemeOption(
@@ -148,5 +168,6 @@ export function createThemeFromScheme(
     textScheme,
     textStyles: textStylesFromScheme(textScheme),
     layoutSet: fromLayout.layoutSet,
+    presetSet: options.presetSet,
   };
 }

@@ -212,6 +212,11 @@ export interface Theme {
 
   // --- Layout-set layer (optional) ---
 
-  /** Activated LayoutScheme name (e.g. 'default' / 'legacy') */
+  /** Activated LayoutScheme name (e.g. 'folio' / 'legacy') */
   layoutSet?: string;
+
+  // --- Theme-preset layer (optional; step 5) ---
+
+  /** Activated ThemePreset name when resolved via `preset` (e.g. 'tech-share') */
+  presetSet?: string;
 }

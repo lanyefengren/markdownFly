@@ -42,7 +42,9 @@ describe('text-set bridging (font-sets removed)', () => {
     expect(theme.fonts.cjk).toBe('宋体');
     expect(theme.fonts.heading).toBe('宋体');
     expect(theme.fonts.code).toBe('Consolas');
-    expect(theme.fontSize.title).toBe(36);
+    // Titles sized up for blue package (academic scheme)
+    expect(theme.fontSize.title).toBe(42);
+    expect(theme.fontSize.heading).toBe(32);
     expect(theme.fontSize.body).toBe(18);
   });
 

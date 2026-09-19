@@ -5,6 +5,7 @@ import {
   themeNames,
   hasTheme,
   DEFAULT_SCHEME_NAME,
+  DEFAULT_THEME_NAME,
   listColorSchemes,
   createThemeFromScheme,
 } from '../src/themes/index.js';
@@ -12,14 +13,16 @@ import { isDarkColor } from '../src/utils/color-mix.js';
 
 const HEX = /^[0-9A-Fa-f]{6}$/;
 
-describe('Theme System (ColorScheme path)', () => {
-  it('registers built-in schemes as the only themes', () => {
+describe('Theme System (user-facing theme name)', () => {
+  it('lists presets first, then color-only schemes', () => {
+    expect(DEFAULT_THEME_NAME).toBe('blue');
+    expect(themeNames()).toContain('blue');
     expect(themeNames()).toContain('ocean');
     expect(themeNames()).toContain('ocean-dark');
+    expect(themeNames()[0]).toBe('blue');
     expect(themeNames()).not.toContain('clean');
-    expect(themeNames()).not.toContain('ink');
+    expect(hasTheme('blue')).toBe(true);
     expect(hasTheme('ocean')).toBe(true);
-    hasTheme('clean');
     expect(hasTheme('clean')).toBe(false);
   });
 
@@ -38,16 +41,27 @@ describe('Theme System (ColorScheme path)', () => {
     }
   });
 
-  it('getTheme resolves scheme names case-insensitively', () => {
+  it('getTheme resolves color scheme names case-insensitively', () => {
     expect(getTheme('ocean').name).toBe('ocean');
+    expect(getTheme('ocean').presetSet).toBeUndefined();
     expect(getTheme('Ocean').name).toBe('ocean');
     expect(getTheme('OCEAN-DARK').name).toBe('ocean-dark');
   });
 
-  it('falls back to the default scheme when theme is unknown or empty', () => {
-    expect(getTheme(undefined).name).toBe(DEFAULT_SCHEME_NAME);
-    expect(getTheme('').name).toBe(DEFAULT_SCHEME_NAME);
-    expect(getTheme('non-existent-theme').name).toBe(DEFAULT_SCHEME_NAME);
+  it('default theme is blue when theme is omitted or empty', () => {
+    for (const name of [undefined, '', '  '] as const) {
+      const theme = getTheme(name as string | undefined);
+      expect(theme.presetSet).toBe('blue');
+      expect(theme.name).toBe('ocean');
+      expect(theme.textSet).toBe('academic');
+      expect(theme.layoutSet).toBe('legacy');
+    }
+  });
+
+  it('falls back to default theme blue when theme is unknown', () => {
+    const theme = getTheme('non-existent-theme');
+    expect(theme.presetSet).toBe('blue');
+    expect(DEFAULT_SCHEME_NAME).toBe('ocean');
   });
 
   it('throws on non-string theme values (CLI contract)', () => {
@@ -99,8 +113,6 @@ describe('code highlight colour on scheme themes', () => {
       const theme = createThemeFromScheme(scheme);
       const band = highlightBackgroundFor(theme).replace(/^#/, '');
       expect(HEX.test(band), `${scheme.name}: band #${band}`).toBe(true);
-      // Light decks use github-light tokens (dark text) — a light tint is correct.
-      // Dark decks use github-dark tokens (light text) — the band must stay dark.
       const darkDeck =
         (theme.shikiTheme ?? '').includes('dark') || isDarkColor(theme.colors.codeBackground);
       if (darkDeck) {

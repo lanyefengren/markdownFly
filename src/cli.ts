@@ -1,6 +1,11 @@
 /**
  * MarkdownFly CLI
  * Usage: mfly <files...> [-o output.pptx] [-t theme] [--quiet|--json]
+ *
+ * `-t` is the user-facing theme name:
+ *   - ThemePreset (e.g. blue) — color × text × layout
+ *   - ColorScheme (e.g. ocean, ocean-dark) — color only
+ * Default theme when omitted: blue
  */
 
 import { Command } from 'commander';
@@ -56,8 +61,7 @@ program
       }
 
       // Strict theme validation. When -t is omitted, the theme comes from
-      // frontmatter (unknown frontmatter schemes fall back to the default
-      // scheme with a warning inside getTheme).
+      // frontmatter or the default theme (blue).
       if (options.theme && !hasTheme(options.theme)) {
         usageError(`Unknown theme "${options.theme}". Available themes: ${themeChoices.join(', ')}`);
       }

@@ -96,11 +96,12 @@ pnpm link --global
 # Convert a single file (named after the input: slides.md → slides.pptx)
 mfly slides.md
 
-# Specify color-scheme theme (ocean, ocean-dark)
+# Specify theme (blue, ocean, ocean-dark)
+mfly slides.md -t blue
 mfly slides.md -t ocean-dark
 
 # Specify custom output path
-mfly slides.md -t ocean -o presentation.pptx
+mfly slides.md -t blue -o presentation.pptx
 
 # Batch convert multiple Markdown files
 mfly docs/*.md
@@ -125,26 +126,26 @@ mfly docs/*.md --quiet
   Per-file failures set `ok:false` with an `error` field.
 - Exit code is `0` only when **every** file converts successfully; if any file
   fails the process exits `1` (a summary line is printed to stderr).
-- `-t` with an unknown scheme name fails with exit `1` (unknown scheme names in
-  markdown frontmatter fall back to `ocean` with a warning).
+- `-t` with an unknown theme name fails with exit `1` (unknown theme names in
+  markdown frontmatter fall back to the default theme `blue` with a warning).
 - Progress lines go to stderr; errors and warnings always go to stderr.
 
 ---
 
-## 🎨 Built-in Themes (ColorScheme)
+## 🎨 Built-in Themes
 
-Themes are generated from a four-slot color scheme: `ink` (text) / `paper`
-(background) / `primary` (decoration) / `secondary` (auxiliary). The legacy 12
-hard-coded themes have been removed; layout rendering is unchanged and will be
-extended later via a layout-set system.
+`-t` / frontmatter `theme:` take a **theme name**. Resolution order:
+**theme preset → color scheme**.
 
-| Scheme | Mode | ink / paper | primary / secondary | Best For |
-| :--- | :--- | :--- | :--- | :--- |
-| **`ocean`** *(default)* | Light | Deep sea ink `#1E4A6F` / Sea-foam paper `#F0F8FF` | Bright blue `#4F9FD9` / Mid blue `#2D6A9F` | General tech talks, product intros |
-| **`ocean-dark`** | Dark | Light foam `#D6E7F5` / Deep sea `#0B1C2E` | Lifted blue `#5BAAE8` / `#8BBCDD` | Night sessions, dark decks |
+| Theme name | Kind | Color | Text | Layout | Best For |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`blue`** *(default)* | Preset package | `ocean` | `academic` (SimSun) | `legacy` | Default full theme |
+| `ocean` | Color only | Deep sea ink `#1E4A6F` / Sea-foam paper `#F0F8FF`; primary `#4F9FD9` / secondary `#2D6A9F` | Default `system` | Layout pack off | Recolor only |
+| `ocean-dark` | Color only | Light foam `#D6E7F5` / Deep sea `#0B1C2E`; primary `#5BAAE8` / secondary `#8BBCDD` | Default `system` | Layout pack off | Night / dark decks |
 
-Register more schemes via the library API `registerColorScheme` /
-`createThemeFromScheme`.
+- Omitting `-t` / `theme` uses the default theme **`blue`**.
+- A theme preset selects color × text × layout in one name; color-scheme names remain valid for recolor-only use.
+- Extend via library APIs `registerThemePreset` / `registerColorScheme` / `registerTextScheme` / `registerLayoutScheme`.
 
 ---
 
@@ -160,7 +161,7 @@ Register more schemes via the library API `registerColorScheme` /
 
 ```yaml
 ---
-theme: ocean-dark # Options: ocean, ocean-dark (ColorScheme names)
+theme: blue # Options: blue (default preset), ocean, ocean-dark
 author: "Your Name"
 footer: "Confidential - {page} / {total}" # {page}/{total}/{section}/{title}
 resource_dir: ./assets # Base directory for relative image paths

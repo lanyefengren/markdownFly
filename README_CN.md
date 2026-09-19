@@ -96,11 +96,12 @@ pnpm link --global
 # 转换单个文件（输出文件名与输入一致：slides.md → slides.pptx）
 mfly slides.md
 
-# 指定色彩方案主题（ocean, ocean-dark）
+# 指定主题（blue, ocean, ocean-dark）
+mfly slides.md -t blue
 mfly slides.md -t ocean-dark
 
 # 指定自定义输出路径
-mfly slides.md -t ocean -o presentation.pptx
+mfly slides.md -t blue -o presentation.pptx
 
 # 批量转换多个 Markdown 文件
 mfly docs/*.md
@@ -122,21 +123,24 @@ mfly docs/*.md --quiet
   `{"ok":true,"durationMs":1234,"files":[{"input":"slides.md","output":"C:/abs/slides.pptx","ok":true}]}`。
   单文件失败时 `ok:false` 并附带 `error` 字段。
 - 仅当**所有**文件转换成功时退出码为 `0`；任意文件失败则退出 `1`（stderr 输出汇总行）。
-- `-t` 指定未知方案名时以退出码 `1` 失败（Markdown frontmatter 中的未知方案名会回退到 `ocean` 并输出警告）。
+- `-t` 指定未知主题名时以退出码 `1` 失败（Markdown frontmatter 中的未知主题名会回退到默认主题 `blue` 并输出警告）。
 - 进度信息输出到 stderr；错误和警告始终输出到 stderr。
 
 ---
 
-## 🎨 内置主题（ColorScheme）
+## 🎨 内置主题
 
-主题由四槽色彩方案生成：`ink`（文字）/ `paper`（背景）/ `primary`（主装饰）/ `secondary`（辅助）。旧的 12 套硬编码主题已移除；版式渲染逻辑保持不变，后续通过版式集扩展。
+`-t` / frontmatter `theme:` 使用**主题名**。解析顺序：**主题预设 → 色彩方案**。
 
-| 方案 | 模式 | ink / paper | primary / secondary | 适合场景 |
-| :--- | :--- | :--- | :--- | :--- |
-| **`ocean`** *(默认)* | 亮 | 深海墨蓝 `#1E4A6F` / 近白海沫 `#F0F8FF` | 亮蓝 `#4F9FD9` / 中蓝 `#2D6A9F` | 通用技术分享、产品介绍 |
-| **`ocean-dark`** | 暗 | 浅沫 `#D6E7F5` / 深海 `#0B1C2E` | 提亮蓝 `#5BAAE8` / `#8BBCDD` | 开发者夜场、深色演示 |
+| 主题名 | 类型 | 色彩 | 文字 | 版式 | 适合场景 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`blue`** *(默认)* | 预设包 | `ocean` | `academic`（宋体） | `legacy` | 默认完整主题 |
+| `ocean` | 仅色彩 | 深海墨蓝 `#1E4A6F` / 近白海沫 `#F0F8FF`；主 `#4F9FD9` / 辅 `#2D6A9F` | 默认 `system` | 不启用版式方案 | 只要换色时 |
+| `ocean-dark` | 仅色彩 | 浅沫 `#D6E7F5` / 深海 `#0B1C2E`；主 `#5BAAE8` / 辅 `#8BBCDD` | 默认 `system` | 不启用版式方案 | 夜场深色演示 |
 
-可通过库 API `registerColorScheme` / `createThemeFromScheme` 注册更多方案。
+- 不写 `-t` / `theme` 时使用默认主题 **`blue`**。
+- 主题预设 = 一次选齐色彩 × 文字 × 版式；色彩方案名仍可用于「只改颜色」。
+- 库 API 可通过 `registerThemePreset` / `registerColorScheme` / `registerTextScheme` / `registerLayoutScheme` 扩展。
 
 ---
 
@@ -152,7 +156,7 @@ mfly docs/*.md --quiet
 
 ```yaml
 ---
-theme: ocean-dark # 可选：ocean, ocean-dark（ColorScheme 名）
+theme: blue # 可选：blue（默认预设）, ocean, ocean-dark
 author: "你的名字"
 footer: "保密 - {page} / {total}" # {page}/{total}/{section}/{title}
 resource_dir: ./assets # 相对图片路径的基础目录
