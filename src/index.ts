@@ -12,7 +12,10 @@ import { getOutputPath } from './utils/output-namer.js';
 
 export interface ConvertOptions {
   output?: string;
+  /** ColorScheme name */
   theme?: string;
+  /** TextScheme name (API-ready; CLI flag deferred to W5.7) */
+  textScheme?: string;
 }
 
 /**
@@ -29,8 +32,10 @@ export async function convert(inputPath: string, options: ConvertOptions = {}): 
   // Merge CLI options into config
   if (options.theme) presentation.config.theme = options.theme;
 
-  // Get theme (ColorScheme name → Theme)
-  const theme = getTheme(presentation.config.theme);
+  // Get theme (ColorScheme name → Theme; optional TextScheme)
+  const theme = getTheme(presentation.config.theme, {
+    textScheme: options.textScheme,
+  });
 
   // Determine output path
   const outputPath = resolve(getOutputPath(absInput, options.output));
@@ -55,6 +60,16 @@ export {
   registerColorScheme,
   oceanScheme,
   oceanDarkScheme,
+  getTextScheme,
+  listTextSchemes,
+  registerTextScheme,
+  textSchemes,
+  systemTextScheme,
+  academicTextScheme,
+  kaiTextScheme,
+  sourceHanSerifTextScheme,
+  DEFAULT_TEXT_SCHEME_NAME,
+  defineUniformTextScheme,
 } from './themes/index.js';
 export { renderDiagram, isDiagramLanguage } from './diagrams/index.js';
 export { renderPresentation } from './renderer/index.js';
@@ -62,4 +77,11 @@ export type { Presentation, SlideNode, SlideElement } from './models/slide.js';
 export type { Theme } from './models/theme.js';
 export type { MarkdownFlyConfig } from './config/types.js';
 export type { ColorScheme, ColorSchemeMode } from './models/color-scheme.js';
+export type {
+  FontStyleEntry,
+  TextScheme,
+  TextSchemePositionKey,
+  UniformTextSchemeOptions,
+} from './models/text-set.js';
 export { resolveSchemeMode, CHROMATIC_SLOTS } from './models/color-scheme.js';
+export { TEXT_SCHEME_POSITION_KEYS } from './models/text-set.js';

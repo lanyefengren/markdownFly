@@ -6,6 +6,18 @@
  * with `?? legacyField`. Deprecated fields keep a `@deprecated` JSDoc tag.
  */
 
+import type {
+  FontStyleEntry,
+  TextScheme,
+  TextSchemePositionKey,
+} from './text-set.js';
+
+export type {
+  FontStyleEntry,
+  TextScheme,
+  TextSchemePositionKey,
+} from './text-set.js';
+
 export interface ThemeGradient {
   /** Gradient start color (hex, without '#') */
   from: string;
@@ -182,4 +194,13 @@ export interface Theme {
   background?: ThemeBackground;
   /** Reverse design traps for this theme (documentation only, not rendered) */
   avoid?: string[];
+
+  // --- Text-set layer (optional; independent of typography) ---
+
+  /** Activated TextScheme name (e.g. 'system' / 'academic') */
+  textSet?: string;
+  /** Resolved TextScheme */
+  textScheme?: TextScheme;
+  /** Position → FontStyleEntry from the scheme (object references) */
+  textStyles?: Partial<Record<TextSchemePositionKey, FontStyleEntry>>;
 }

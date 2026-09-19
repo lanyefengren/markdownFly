@@ -125,7 +125,12 @@ describe('createThemeFromScheme', () => {
   it('builds a complete Theme with default fonts/sizes', () => {
     const theme = createThemeFromScheme(lightScheme);
     expect(theme.name).toBe('test-light');
-    expect(theme.fonts.heading).toBe('Segoe UI');
+    // default text scheme `system` → uniform 微软雅黑 (code stays Consolas)
+    expect(theme.textSet).toBe('system');
+    expect(theme.fonts.heading).toBe('微软雅黑');
+    expect(theme.fonts.body).toBe('微软雅黑');
+    expect(theme.fonts.cjk).toBe('微软雅黑');
+    expect(theme.fonts.code).toBe('Consolas');
     expect(theme.fontSize.title).toBe(36);
     expect(theme.colors.background).toBe('FFFFFF');
     expect(theme.shikiTheme).toBe('github-light');
